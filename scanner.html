@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Daily Life Science AI Reality Scanner." />
+    <title>DLS | AI Reality Scanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+  </head>
+  <body class="tool-page">
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">⚡</span>
+        <span>Daily<span>Life</span>Science</span>
+      </a>
+      <div class="nav-links">
+        <a href="scanner.html">AI Reality Scanner</a>
+        <a href="simulator.html">What If?</a>
+        <a href="index.html">Future Labs</a>
+      </div>
+      <button class="nav-cta" id="startCameraNav">Start Camera</button>
+    </nav>
+
+    <main class="tool-shell scanner-tool">
+      <section class="tool-intro">
+        <span class="eyebrow">Feature 01</span>
+        <h1>AI Reality Scanner</h1>
+        <p>
+          Point the camera at real objects. DLS detects what it can see, tracks
+          motion between frames, and adapts science overlays to the object,
+          including forces, energy transfer, material science, chemistry,
+          biology, and microscopic structure.
+        </p>
+      </section>
+
+      <section class="scanner-workbench">
+        <div class="live-panel">
+          <div class="camera-toolbar">
+            <button class="primary-button" id="startCamera">Start camera</button>
+            <label class="secondary-button upload-button">
+              Upload image
+              <input id="imageUpload" type="file" accept="image/*" />
+            </label>
+            <span id="scannerStatus">Model loading...</span>
+          </div>
+          <div class="science-toolbar" id="scienceToolbar" aria-label="Science overlay layers">
+            <button class="active" data-layer="forces">Forces</button>
+            <button class="active" data-layer="energy">Energy</button>
+            <button class="active" data-layer="motion">Motion</button>
+            <button class="active" data-layer="materials">Materials</button>
+            <button class="active" data-layer="micro">Micro</button>
+          </div>
+          <div class="live-stage" id="liveStage">
+            <video id="cameraFeed" playsinline muted></video>
+            <img id="uploadedFrame" alt="" />
+            <canvas id="overlayCanvas"></canvas>
+            <div class="scan-line live"></div>
+          </div>
+        </div>
+
+        <aside class="analysis-panel">
+          <span class="concept-label">Live science readout</span>
+          <h2 id="activeObject">Waiting for camera</h2>
+          <p id="activeSummary">
+            Start the camera or upload an image. When the model recognizes an
+            object, the overlay will attach labels and vectors to its actual
+            position in the frame.
+          </p>
+          <div class="readout-grid">
+            <article>
+              <strong>Confidence</strong>
+              <span id="confidenceReadout">--</span>
+            </article>
+            <article>
+              <strong>Motion</strong>
+              <span id="motionReadout">--</span>
+            </article>
+            <article>
+              <strong>Forces</strong>
+              <span id="forceReadout">--</span>
+            </article>
+            <article>
+              <strong>Microscopic view</strong>
+              <span id="microReadout">--</span>
+            </article>
+          </div>
+          <div class="concept-card scanner-notes">
+            <h3>Detected concepts</h3>
+            <ul id="conceptNotes">
+              <li>Object-aware labels will appear here.</li>
+            </ul>
+          </div>
+          <div class="formula-strip" id="formulaStrip">
+            <span>F = m × a</span>
+            <span>KE = 1/2mv²</span>
+            <span>Pressure = F/A</span>
+          </div>
+          <p class="accuracy-note">
+            The live detector uses a browser object-recognition model. It is
+            accurate for known categories and labels confidence; unknown objects
+            still receive general scene physics from size, position, and motion.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <script src="scanner.js"></script>
+  </body>
+</html>

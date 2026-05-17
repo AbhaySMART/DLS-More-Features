@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Daily Life Science What If Universe Simulator." />
+    <title>DLS | What If Universe Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body class="tool-page">
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">⚡</span>
+        <span>Daily<span>Life</span>Science</span>
+      </a>
+      <div class="nav-links">
+        <a href="scanner.html">AI Reality Scanner</a>
+        <a href="simulator.html">What If?</a>
+        <a href="index.html">Future Labs</a>
+      </div>
+      <button class="nav-cta" id="resetSim">Reset World</button>
+    </nav>
+
+    <main class="tool-shell simulator-tool">
+      <section class="tool-intro">
+        <span class="eyebrow">Feature 02</span>
+        <h1>“What If?” Universe Simulator</h1>
+        <p>
+          Type any “what if” question and watch a 3D city respond. Cars skid,
+          buildings strain, trees fade, steam forms, people shrink, air changes,
+          water reacts, and the readout explains the physics behind each consequence.
+        </p>
+      </section>
+
+      <section class="sim-workbench">
+        <aside class="sim-controls">
+          <h2>Ask a What If</h2>
+          <form class="prompt-box" id="whatIfForm">
+            <label for="whatIfInput">Type a science scenario</label>
+            <textarea
+              id="whatIfInput"
+              rows="4"
+              placeholder="What if gravity became 3x stronger and friction disappeared?"
+            ></textarea>
+            <button class="primary-button" type="submit">Simulate</button>
+          </form>
+
+          <div class="prompt-examples" aria-label="Example prompts">
+            <button data-prompt="What if gravity became 2x stronger?">2x gravity</button>
+            <button data-prompt="What if oxygen disappeared and fires went out?">no oxygen</button>
+            <button data-prompt="What if friction became zero on all roads?">zero friction</button>
+            <button data-prompt="What if humans became ant-sized?">ant-sized humans</button>
+            <button data-prompt="What if water boiled at room temperature?">room-temp boiling</button>
+            <button data-prompt="What if gravity was low, the air was thin, and friction was tiny?">alien planet combo</button>
+          </div>
+
+          <h2 class="control-subhead">Quick variables</h2>
+          <div class="law-list rich" id="simLawList">
+            <button class="active" data-law="gravity">
+              <span>Gravity</span>
+              <small>Change weight, jumps, structures, and lift</small>
+            </button>
+            <button data-law="oxygen">
+              <span>Oxygen</span>
+              <small>Change breathing, fire, rust, and ecosystems</small>
+            </button>
+            <button data-law="friction">
+              <span>Friction</span>
+              <small>Change traction, braking, walking, and grip</small>
+            </button>
+            <button data-law="scale">
+              <span>Human scale</span>
+              <small>Change relative size, surface tension, and terrain</small>
+            </button>
+            <button data-law="boiling">
+              <span>Water boiling point</span>
+              <small>Change oceans, weather, cooling, and biology</small>
+            </button>
+          </div>
+
+          <label class="slider-row">
+            <span id="sliderLabel">Gravity multiplier: 2.0x</span>
+            <input id="lawSlider" type="range" min="0.2" max="3" step="0.1" value="2" />
+          </label>
+
+          <div class="analysis-stack" id="analysisStack">
+            <span class="concept-label">Analyzed variables</span>
+            <p>gravity 2.0x, normal oxygen, normal friction, normal human scale, normal boiling point</p>
+          </div>
+
+          <div class="metrics-grid">
+            <article><strong id="metricOne">Weight</strong><span id="metricOneValue">200%</span></article>
+            <article><strong id="metricTwo">Car braking</strong><span id="metricTwoValue">Harder</span></article>
+            <article><strong id="metricThree">Building stress</strong><span id="metricThreeValue">High</span></article>
+          </div>
+        </aside>
+
+        <div class="sim-stage">
+          <canvas id="worldCanvas" aria-label="3D universe simulation"></canvas>
+          <div class="science-label-layer" id="scienceLabels" aria-hidden="true"></div>
+          <div class="sim-hud">
+            <span id="worldBadge">Gravity x2.0</span>
+            <strong id="worldTitle">Heavier Earth</strong>
+          </div>
+          <div class="sim-explain">
+            <h2 id="explainTitle">If gravity became 2x stronger...</h2>
+            <p id="explainCopy">
+              Every object keeps the same mass, but weight doubles. Cars need
+              more force to climb and brake, buildings carry twice the load, and
+              jumps become short, fast arcs.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="simulator.js"></script>
+  </body>
+</html>
