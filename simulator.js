@@ -22,6 +22,19 @@ const metricThree = document.querySelector("#metricThree");
 const metricOneValue = document.querySelector("#metricOneValue");
 const metricTwoValue = document.querySelector("#metricTwoValue");
 const metricThreeValue = document.querySelector("#metricThreeValue");
+const universalControls = document.querySelector("#universalControls");
+const presetGrid = document.querySelector("#presetGrid");
+const eventGrid = document.querySelector("#eventGrid");
+const missionList = document.querySelector("#missionList");
+const timeControls = document.querySelector("#timeControls");
+const scaleSwitcher = document.querySelector("#scaleSwitcher");
+const narratorText = document.querySelector("#narratorText");
+const dashHealth = document.querySelector("#dashHealth");
+const dashEnergy = document.querySelector("#dashEnergy");
+const dashTraffic = document.querySelector("#dashTraffic");
+const dashStructure = document.querySelector("#dashStructure");
+const dashPollution = document.querySelector("#dashPollution");
+const dashWater = document.querySelector("#dashWater");
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xcfefff);
@@ -66,6 +79,9 @@ const steamPuffs = [];
 const rainDrops = [];
 const scienceAnchors = {};
 const scienceArrows = {};
+const trafficLights = [];
+const homes = [];
+const disasterObjects = [];
 const pedestrianPaths = [
   { orientation: "x", z: 7.4, from: -48, to: 48, x: 0 },
   { orientation: "x", z: -7.4, from: -48, to: 48, x: 0 },
@@ -81,6 +97,12 @@ const pedestrianPaths = [
 
 let activeSliderLaw = "gravity";
 let simState = defaultState();
+let previousSimTime = 0;
+let simClock = 0;
+let timeScale = 1;
+let paused = false;
+let lastFrameMs = 0;
+let activeMission = "";
 
 function defaultState() {
   return {
@@ -88,13 +110,19 @@ function defaultState() {
     gravity: 2,
     oxygen: 21,
     friction: 1,
+    airResistance: 1,
     humanScale: 1,
     boilingPoint: 212,
     atmosphere: 1,
     temperatureF: 72,
+    sunlight: 1,
+    waterLevel: 1,
+    magnetism: 1,
     acidity: 0,
     wind: 0,
-    earthquake: 0
+    earthquake: 0,
+    disaster: "",
+    mission: ""
   };
 }
 
@@ -200,11 +228,15 @@ function createWorld() {
   people.length = 0;
   steamPuffs.length = 0;
   rainDrops.length = 0;
+  trafficLights.length = 0;
+  homes.length = 0;
+  disasterObjects.length = 0;
 
   world.add(box(112, 0.5, 88, materials.grass, 0, -0.25, 0));
   createRoadNetwork();
   createWorldBoundary();
   createCityBlocks();
+  createHomesAndDailyLife();
   createParkAndWater();
   createVehicles();
   createTrees();
@@ -343,6 +375,57 @@ function createParkAndWater() {
   world.add(fountainWater);
 }
 
+function createHomesAndDailyLife() {
+  const homeMaterial = new THREE.MeshStandardMaterial({ color: 0xf3d2a4, roughness: 0.82 });
+  const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x7f1d1d, roughness: 0.78 });
+  const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xd6d3d1, roughness: 0.86 });
+  [
+    [-48, -2, 0.12],
+    [-42, -2, -0.08],
+    [43, 2, 0.08],
+    [49, 2, -0.12]
+  ].forEach(([x, z, rot], index) => {
+    const home = new THREE.Group();
+    home.add(box(5.4, 3.2, 4.8, homeMaterial, 0, 0, 0));
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.25, 2.2, 4), roofMaterial);
+    roof.position.y = 4.25;
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    home.add(roof);
+    home.add(box(1.1, 1.9, 0.12, new THREE.MeshStandardMaterial({ color: 0x78350f }), 0, 0.1, 2.47));
+    home.add(box(1.2, 0.85, 0.13, materials.glass, -1.6, 1.6, 2.48));
+    home.add(box(1.2, 0.85, 0.13, materials.glass, 1.6, 1.6, 2.48));
+
+    const interior = new THREE.Group();
+    interior.add(box(4.6, 0.08, 3.8, floorMaterial, 0, 0.08, 0));
+    interior.add(box(1.4, 0.55, 0.9, new THREE.MeshStandardMaterial({ color: 0x2563eb }), -1.2, 0.2, -0.8));
+    interior.add(box(0.8, 0.5, 0.8, new THREE.MeshStandardMaterial({ color: 0x92400e }), 1.2, 0.15, -0.7));
+    interior.add(box(0.9, 1.2, 0.12, new THREE.MeshBasicMaterial({ color: 0xfacc15 }), 1.8, 1.5, 1.95));
+    const resident = createMiniPerson(0x14b8a6);
+    resident.position.set(-0.2, 0.24, 0.6);
+    interior.add(resident);
+    home.add(interior);
+
+    home.position.set(x, 0, z);
+    home.rotation.y = rot;
+    home.userData = { resident, phase: index * 1.7 };
+    homes.push(home);
+    world.add(home);
+  });
+}
+
+function createMiniPerson(color = 0x0f766e) {
+  const group = new THREE.Group();
+  group.add(cylinder(0.12, 0.15, 0.64, new THREE.MeshStandardMaterial({ color, roughness: 0.75 }), 0, 0.25, 0, 10));
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), materials.skin);
+  head.position.y = 0.95;
+  head.castShadow = true;
+  group.add(head);
+  group.add(box(0.08, 0.45, 0.08, new THREE.MeshStandardMaterial({ color: 0x1f2937 }), -0.08, -0.06, 0));
+  group.add(box(0.08, 0.45, 0.08, new THREE.MeshStandardMaterial({ color: 0x1f2937 }), 0.08, -0.06, 0));
+  return group;
+}
+
 function createVehicles() {
   const carSpecs = [
     [-42, -2.6, 0xef4444, 0.18, false, 0], [-6, 2.6, 0x2563eb, -0.15, false, 16], [28, -30.2, 0xf97316, 0.14, false, 32],
@@ -357,6 +440,7 @@ function createCar(x, z, color, speed, vertical = false, phase = 0) {
   const bodyMaterial = new THREE.MeshStandardMaterial({ color, roughness: 0.34, metalness: 0.12 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.42 });
   const chrome = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.28, metalness: 0.55 });
+  const rollingParts = [];
   group.add(box(4.8, 0.72, 2.08, bodyMaterial, 0, 0.42, 0));
   group.add(box(2.0, 0.5, 1.82, bodyMaterial, -1.32, 0.82, 0));
   group.add(box(1.05, 0.42, 1.78, bodyMaterial, 1.64, 0.76, 0));
@@ -373,15 +457,20 @@ function createCar(x, z, color, speed, vertical = false, phase = 0) {
   for (const wx of [-1.55, 1.55]) {
     for (const wz of [-1.08, 1.08]) {
       const wheel = cylinder(0.43, 0.43, 0.36, dark, wx, 0.15, wz, 24);
-      wheel.rotation.z = Math.PI / 2;
+      wheel.rotation.x = Math.PI / 2;
       const hub = cylinder(0.2, 0.2, 0.39, chrome, wx, 0.15, wz, 18);
-      hub.rotation.z = Math.PI / 2;
-      group.add(wheel, hub);
+      hub.rotation.x = Math.PI / 2;
+      const tireSide = new THREE.Mesh(new THREE.TorusGeometry(0.43, 0.055, 10, 24), dark);
+      tireSide.position.set(wx, 0.15, wz + (wz > 0 ? 0.19 : -0.19));
+      tireSide.rotation.x = Math.PI / 2;
+      tireSide.castShadow = true;
+      rollingParts.push(wheel, hub, tireSide);
+      group.add(wheel, hub, tireSide);
     }
   }
   group.position.set(x, 0.28, z);
   group.rotation.y = vertical ? Math.PI / 2 : 0;
-  group.userData = { speed, vertical, homeX: x, homeZ: z, laneX: x, laneZ: z, phase, skid: 0 };
+  group.userData = { speed, vertical, homeX: x, homeZ: z, laneX: x, laneZ: z, phase, travel: phase, stopped: false, skid: 0, rollingParts };
   cars.push(group);
   world.add(group);
 }
@@ -470,35 +559,46 @@ function createPerson(index) {
 
 function createTrafficLights() {
   const lightPositions = [
-    [-7.2, -7.2, 0], [7.2, 7.2, Math.PI], [-7.2, 7.2, Math.PI / 2], [7.2, -7.2, -Math.PI / 2],
-    [-37.2, -7.2, 0], [-27.2, 7.2, Math.PI], [27.2, -7.2, 0], [37.2, 7.2, Math.PI],
-    [-7.2, -31.8, Math.PI / 2], [7.2, -24.2, -Math.PI / 2], [-7.2, 24.2, Math.PI / 2], [7.2, 31.8, -Math.PI / 2]
+    [-7.2, -7.2, 0, "h"], [7.2, 7.2, Math.PI, "h"], [-7.2, 7.2, Math.PI / 2, "v"], [7.2, -7.2, -Math.PI / 2, "v"],
+    [-37.2, -7.2, 0, "h"], [-27.2, 7.2, Math.PI, "h"], [27.2, -7.2, 0, "h"], [37.2, 7.2, Math.PI, "h"],
+    [-7.2, -31.8, Math.PI / 2, "v"], [7.2, -24.2, -Math.PI / 2, "v"], [-7.2, 24.2, Math.PI / 2, "v"], [7.2, 31.8, -Math.PI / 2, "v"]
   ];
-  lightPositions.forEach(([x, z, rot], index) => {
+  lightPositions.forEach(([x, z, rot, axis]) => {
     const group = new THREE.Group();
-    group.add(cylinder(0.1, 0.14, 4.4, new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.45, metalness: 0.4 }), 0, 0, 0, 12));
-    group.add(box(0.18, 0.18, 1.5, new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.45, metalness: 0.4 }), 0.68, 4.2, 0));
-    const signal = box(0.48, 1.2, 0.34, new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.35 }), 1.42, 3.52, 0);
+    const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x263241, roughness: 0.4, metalness: 0.55 });
+    const casingMaterial = new THREE.MeshStandardMaterial({ color: 0x0b1220, roughness: 0.32, metalness: 0.35 });
+    group.add(cylinder(0.09, 0.14, 5.2, poleMaterial, 0, 0, 0, 14));
+    group.add(box(2.05, 0.16, 0.16, poleMaterial, 0.95, 4.78, 0));
+    group.add(box(0.16, 0.55, 0.16, poleMaterial, 1.86, 4.34, 0));
+    const signal = box(0.56, 1.55, 0.42, casingMaterial, 1.86, 3.42, 0);
     group.add(signal);
+    const bulbs = {};
     [
-      [0xff2a2a, 3.94, index % 3 === 0],
-      [0xfacc15, 3.52, index % 3 === 1],
-      [0x22c55e, 3.1, index % 3 === 2]
-    ].forEach(([color, y, active]) => {
+      ["red", 0xff2a2a, 3.92],
+      ["yellow", 0xfacc15, 3.42],
+      ["green", 0x22c55e, 2.92]
+    ].forEach(([name, color, y]) => {
       const bulb = new THREE.Mesh(
-        new THREE.SphereGeometry(0.13, 16, 12),
+        new THREE.SphereGeometry(0.15, 20, 14),
         new THREE.MeshStandardMaterial({
           color,
           emissive: color,
-          emissiveIntensity: active ? 1.8 : 0.25,
+          emissiveIntensity: 0.18,
           roughness: 0.25
         })
       );
-      bulb.position.set(1.61, y, 0.18);
+      bulb.position.set(2.08, y, 0.23);
+      const visor = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, 18, 1, true), casingMaterial);
+      visor.position.set(2.08, y, 0.34);
+      visor.rotation.x = Math.PI / 2;
+      bulbs[name] = bulb;
       group.add(bulb);
+      group.add(visor);
     });
     group.position.set(x, 0, z);
     group.rotation.y = rot;
+    group.userData = { axis, bulbs };
+    trafficLights.push(group);
     world.add(group);
   });
 }
@@ -668,6 +768,8 @@ function parsePrompt(text) {
   }
   if (/thin atmosphere|less air/.test(lower)) next.atmosphere = 0.35;
   if (/thick atmosphere|more air|dense air/.test(lower)) next.atmosphere = 1.8;
+  if (/air resistance[^.?!]*(zero|none|disappears)|no air resistance|without air resistance/.test(lower)) next.airResistance = 0;
+  if (/high air resistance|thick drag|more drag/.test(lower)) next.airResistance = 1.8;
 
   if (/(no|zero|without)[^.?!]*friction|friction[^.?!]*(disappears|vanished|gone|zero|none)|frictionless/.test(lower)) next.friction = 0;
   if (/low friction|slippery|ice everywhere|tiny friction/.test(lower)) next.friction = 0.12;
@@ -687,6 +789,12 @@ function parsePrompt(text) {
   }
   if (/hotter|extreme heat|heat wave|very hot/.test(lower)) next.temperatureF = 115;
   if (/colder|ice age|freezing|very cold/.test(lower)) next.temperatureF = 25;
+  if (/sun disappears|no sunlight|dark earth/.test(lower)) next.sunlight = 0.05;
+  if (/bright sun|more sunlight|solar flare/.test(lower)) next.sunlight = 1.8;
+  if (/underwater|flood|water level rises|sea level rises/.test(lower)) next.waterLevel = 1.9;
+  if (/drought|water disappears|no water/.test(lower)) next.waterLevel = 0.25;
+  if (/magnetism disappears|no magnetism|zero magnetic/.test(lower)) next.magnetism = 0;
+  if (/strong magnet|super magnet|magnetic field stronger|more magnetism/.test(lower)) next.magnetism = 2.5;
   const tempMatch = lower.match(/(?:temperature|temp)[^\d-]*(-?\d+(?:\.\d+)?)\s*(c|celsius|f|fahrenheit)?/);
   if (tempMatch) {
     const raw = Number(tempMatch[1]);
@@ -710,10 +818,25 @@ function setScenario(nextState) {
   updateReadout();
 }
 
-function setFullCityView() {
-  camera.position.set(78, 62, 86);
-  controls.target.set(0, 8, 0);
+function setCameraScale(scale) {
+  const views = {
+    city: { camera: [78, 62, 86], target: [0, 8, 0] },
+    building: { camera: [30, 24, 30], target: [18, 12, 14] },
+    room: { camera: [51, 9, 11], target: [47, 2.4, 2] },
+    human: { camera: [14, 6.5, 12], target: [2, 1.1, 7] },
+    molecular: { camera: [-39, 7, 36], target: [-44, 1.3, 30] }
+  };
+  const view = views[scale] || views.city;
+  camera.position.set(...view.camera);
+  controls.target.set(...view.target);
   controls.update();
+  scaleSwitcher?.querySelectorAll("button").forEach((button) => {
+    button.classList.toggle("active", button.dataset.scale === scale);
+  });
+}
+
+function setFullCityView() {
+  setCameraScale("city");
 }
 
 function selectSliderLaw(law) {
@@ -743,6 +866,10 @@ function scenarioTitle() {
   if (simState.atmosphere < 0.2) parts.push("near vacuum");
   if (simState.wind > 0.5) parts.push("dangerous wind");
   if (simState.earthquake > 0) parts.push("earthquake stress");
+  if (simState.waterLevel > 1.4) parts.push("flooded city");
+  if (simState.sunlight < 0.2) parts.push("dark world");
+  if (simState.magnetism > 1.8) parts.push("magnetic surge");
+  if (simState.disaster) parts.push(simState.disaster);
   return parts.length ? parts.join(" + ") : "normal Earth";
 }
 
@@ -762,15 +889,24 @@ function updateReadout() {
   if (simState.atmosphere < 0.2) consequences.push("A thin or missing atmosphere removes oxygen, reduces drag, and makes liquid water unstable.");
   if (simState.wind > 0.5) consequences.push("Strong wind loads bend trees, push cars sideways, and increase stress on tall buildings.");
   if (simState.earthquake > 0) consequences.push("Ground shaking adds lateral forces that make tall buildings sway and crack.");
+  if (simState.waterLevel > 1.4) consequences.push("Rising water blocks roads, slows pedestrians, and increases pressure on bridge supports.");
+  if (simState.sunlight < 0.2) consequences.push("Low sunlight reduces solar generation and cools the city over time.");
+  if (simState.magnetism > 1.8) consequences.push("Strong magnetic fields interfere with electronics, power flow, and vehicle sensors.");
+  if (simState.disaster) consequences.push(`Disaster active: ${simState.disaster}. The outcome depends on the current physics settings.`);
   explainCopy.textContent = consequences.join(" ");
 
   analysisStack.textContent = [
     `gravity ${simState.gravity.toFixed(2)}x`,
     `oxygen ${Math.round(simState.oxygen)}%`,
     `friction ${simState.friction.toFixed(2)}`,
+    `drag ${simState.airResistance.toFixed(2)}`,
+    `temperature ${Math.round(simState.temperatureF)}°F`,
     `human size ${Math.round(simState.humanScale * 100)}%`,
     `water boils ${Math.round(simState.boilingPoint)}°F`,
-    `air pressure ${Math.round(simState.atmosphere * 100)}%`
+    `air pressure ${Math.round(simState.atmosphere * 100)}%`,
+    `sunlight ${Math.round(simState.sunlight * 100)}%`,
+    `water ${Math.round(simState.waterLevel * 100)}%`,
+    `magnetism ${simState.magnetism.toFixed(1)}x`
   ].join(", ");
 
   metricOne.textContent = "Structural load";
@@ -779,9 +915,51 @@ function updateReadout() {
   metricTwoValue.textContent = simState.friction < 0.25 ? "Skidding" : simState.gravity > 2 ? "Heavy drag" : "Moving";
   metricThree.textContent = "Habitability";
   metricThreeValue.textContent = simState.oxygen < 12 || simState.boilingPoint < 90 || simState.atmosphere < 0.2 ? "Danger" : "Stable";
+  updateUniversalControls();
+  updateDashboardAndNarrator();
+}
+
+function updateUniversalControls() {
+  universalControls?.querySelectorAll("input[data-rule]").forEach((input) => {
+    const rule = input.dataset.rule;
+    const value = simState[rule];
+    if (Number(input.value) !== Number(value)) input.value = value;
+    const output = input.parentElement.querySelector("output");
+    if (!output) return;
+    if (rule === "gravity" || rule === "magnetism") output.textContent = `${Number(value).toFixed(1)}x`;
+    else if (rule === "temperatureF") output.textContent = `${Math.round(value)}°F`;
+    else if (["atmosphere", "sunlight", "waterLevel", "wind"].includes(rule)) output.textContent = `${Math.round(value * 100)}%`;
+    else if (rule === "oxygen") output.textContent = `${Math.round(value)}%`;
+    else output.textContent = Number(value).toFixed(2);
+  });
+}
+
+function updateDashboardAndNarrator() {
+  const healthScore = clamp(100 - Math.max(0, 14 - simState.oxygen) * 5 - Math.abs(simState.temperatureF - 72) * 0.6 - Math.max(0, simState.waterLevel - 1.2) * 25, 0, 100);
+  const energyStress = clamp(Math.abs(simState.temperatureF - 72) * 0.8 + (1 - simState.sunlight) * 25 + Math.max(0, simState.magnetism - 1) * 18, 0, 100);
+  const trafficStress = clamp((1 - simState.friction) * 80 + Math.max(0, simState.gravity - 1) * 18 + simState.wind * 25 + Math.max(0, simState.waterLevel - 1.1) * 35, 0, 100);
+  const structureStress = clamp(Math.max(0, simState.gravity - 1) * 35 + simState.earthquake * 65 + simState.wind * 25 + Math.max(0, simState.waterLevel - 1.4) * 30, 0, 100);
+  const pollution = clamp((21 - simState.oxygen) * 2 + (simState.disaster === "volcanic eruption" ? 70 : 0) + (simState.disaster === "radiation leak" ? 45 : 0), 0, 100);
+  dashHealth.textContent = healthScore > 70 ? "Stable" : healthScore > 35 ? "Stressed" : "Critical";
+  dashEnergy.textContent = energyStress < 30 ? "Normal" : energyStress < 65 ? "Strained" : "Blackout risk";
+  dashTraffic.textContent = trafficStress < 30 ? "Flowing" : trafficStress < 65 ? "Congested" : "Gridlock";
+  dashStructure.textContent = structureStress < 30 ? "Stable" : structureStress < 65 ? "Strained" : "Failure risk";
+  dashPollution.textContent = pollution < 30 ? "Low" : pollution < 65 ? "Hazardous" : "Severe";
+  dashWater.textContent = simState.waterLevel > 1.5 ? "Flooding" : simState.waterLevel < 0.45 ? "Drought" : "Normal";
+
+  const notes = [];
+  if (trafficStress > 60) notes.push("Traffic flow is breaking down because traction, gravity, wind, or flooding changed vehicle control.");
+  if (energyStress > 55) notes.push("The power grid is stressed by temperature, sunlight loss, or magnetic interference.");
+  if (healthScore < 50) notes.push("Citizen health is falling because oxygen, heat, or water conditions moved outside safe ranges.");
+  if (structureStress > 55) notes.push("Structures are under visible stress from load, wind, shaking, or water pressure.");
+  if (activeMission) notes.push(`Mission active: ${activeMission}`);
+  narratorText.textContent = notes[0] || "The city is stable. Try a preset, disaster, or rule slider to start a cause-and-effect chain.";
 }
 
 function applySimulation(time) {
+  const rawDt = previousSimTime ? time - previousSimTime : 0.016;
+  const dt = paused ? 0 : Math.min(0.06, Math.max(0, rawDt));
+  previousSimTime = time;
   const heavy = Math.max(0, simState.gravity - 1);
   const lowGravity = Math.max(0, 1 - simState.gravity);
   const noGrip = Math.max(0, 1 - simState.friction);
@@ -789,6 +967,8 @@ function applySimulation(time) {
   const boiling = simState.boilingPoint <= simState.temperatureF + 8 ? 1 : 0;
   const thinAir = Math.max(0, 1 - simState.atmosphere);
   const shake = simState.earthquake * Math.sin(time * 18) * 0.45;
+  const flood = Math.max(0, simState.waterLevel - 1);
+  const magneticDisruption = Math.max(0, simState.magnetism - 1);
 
   world.position.x = shake;
   world.rotation.z = simState.earthquake ? Math.sin(time * 22) * 0.006 : 0;
@@ -802,15 +982,24 @@ function applySimulation(time) {
     building.userData.body.material.color.copy(building.userData.facadeColor).lerp(new THREE.Color(0x6b7280), damage);
   });
 
+  updateTrafficLights(time);
+
   cars.forEach((car, index) => {
     const baseSpeed = car.userData.speed;
     const gravitySpeed = baseSpeed / Math.sqrt(Math.max(simState.gravity, 0.12));
-    const speed = gravitySpeed * (1 + noGrip * 3.5 + thinAir * 0.35);
+    const speed = gravitySpeed * (1 + noGrip * 3.5 + thinAir * 0.35 - Math.max(0, simState.airResistance - 1) * 0.2 - flood * 0.45);
     const horizontalLimit = 50;
     const verticalLimit = 40;
-    const offset = wrapLane(time * speed * 10 + car.userData.phase, car.userData.vertical ? verticalLimit : horizontalLimit);
+    const limit = car.userData.vertical ? verticalLimit : horizontalLimit;
+    const direction = Math.sign(speed) || 1;
+    const nextTravel = car.userData.travel + speed * dt * 10;
+    const redLightStop = shouldStopAtRed(car, nextTravel, direction, time);
+    const trafficStop = shouldStopForTraffic(car, direction, limit);
+    car.userData.stopped = redLightStop || trafficStop;
+    if (!car.userData.stopped || noGrip > 0.65) car.userData.travel = nextTravel;
+    const offset = wrapLane(car.userData.travel, limit);
     const lateralSkid = Math.sin(time * 3.5 + index) * noGrip;
-    const windPush = simState.wind * Math.sin(time * 2 + index);
+    const windPush = simState.wind * Math.sin(time * 2 + index) + magneticDisruption * Math.sin(time * 3 + index) * 0.6;
     if (car.userData.vertical) {
       car.position.z = offset;
       car.position.x = clamp(car.userData.laneX + lateralSkid * 2.4 + windPush * 1.2, car.userData.laneX - 2.8, car.userData.laneX + 2.8);
@@ -821,6 +1010,11 @@ function applySimulation(time) {
     car.rotation.z = Math.sin(time * 7 + index) * noGrip * 0.26;
     car.rotation.y = (car.userData.vertical ? Math.PI / 2 : 0) + Math.sin(time * 5 + index) * noGrip * 0.32;
     car.scale.y = Math.max(0.72, 1 - heavy * 0.06);
+    if (!car.userData.stopped || noGrip > 0.65) {
+      car.userData.rollingParts.forEach((part) => {
+        part.rotation.z -= speed * dt * 8;
+      });
+    }
   });
 
   trees.forEach((tree, index) => {
@@ -834,7 +1028,7 @@ function applySimulation(time) {
 
   people.forEach((person, index) => {
     const data = person.userData;
-    data.progress = (data.progress + data.speed * Math.max(0.25, simState.friction) / Math.sqrt(Math.max(simState.gravity, 0.2))) % 1;
+    data.progress = (data.progress + data.speed * 58 * dt * Math.max(0.25, simState.friction) / Math.sqrt(Math.max(simState.gravity, 0.2)) * Math.max(0.18, 1 - flood * 0.55)) % 1;
     positionPersonOnPath(person, data.progress);
     const step = Math.sin(time * 8 + index);
     data.legLeft.rotation.x = step * 0.45;
@@ -858,7 +1052,8 @@ function applySimulation(time) {
   const water = world.getObjectByName("water");
   if (water) {
     water.material.opacity = boiling || thinAir > 0.8 ? 0.32 : 0.76;
-    water.scale.setScalar(boiling ? 0.88 + Math.sin(time * 3) * 0.02 : 1);
+    water.scale.setScalar((boiling ? 0.88 + Math.sin(time * 3) * 0.02 : 1) * simState.waterLevel);
+    water.position.y = 0.12 + flood * 0.75;
   }
   const fountainWater = world.getObjectByName("fountainWater");
   if (fountainWater) fountainWater.visible = !boiling && simState.atmosphere > 0.15;
@@ -883,8 +1078,18 @@ function applySimulation(time) {
     }
   });
 
-  sun.intensity = simState.atmosphere < 0.2 ? 5.5 : simState.oxygen < 8 ? 3.6 : 4.2;
-  ambient.intensity = simState.atmosphere < 0.2 ? 0.55 : 1.6;
+  homes.forEach((home, index) => {
+    const resident = home.userData.resident;
+    if (resident) {
+      resident.position.x = Math.sin(time * 0.8 + home.userData.phase) * 0.75;
+      resident.rotation.y = Math.sin(time * 0.6 + index) * 0.8;
+    }
+  });
+
+  updateDisasterObjects(time);
+
+  sun.intensity = (simState.atmosphere < 0.2 ? 5.5 : simState.oxygen < 8 ? 3.6 : 4.2) * simState.sunlight;
+  ambient.intensity = (simState.atmosphere < 0.2 ? 0.55 : 1.6) * (0.45 + simState.sunlight * 0.55);
   const sky = simState.atmosphere < 0.2 ? 0x111827 : simState.oxygen < 8 ? 0xfed7aa : boiling ? 0xdbeafe : 0xcfefff;
   scene.background.set(sky);
   scene.fog.color.set(sky);
@@ -896,6 +1101,143 @@ function applySimulation(time) {
 function wrapLane(value, limit) {
   const span = limit * 2;
   return ((((value + limit) % span) + span) % span) - limit;
+}
+
+function trafficState(axis, time) {
+  const phase = time % 20;
+  if (axis === "h") {
+    if (phase < 8) return "green";
+    if (phase < 10) return "yellow";
+    return "red";
+  }
+  if (phase < 8) return "red";
+  if (phase < 10) return "red";
+  if (phase < 18) return "green";
+  return "yellow";
+}
+
+function updateTrafficLights(time) {
+  trafficLights.forEach((light) => {
+    const state = trafficState(light.userData.axis, time);
+    Object.entries(light.userData.bulbs).forEach(([name, bulb]) => {
+      const active = name === state;
+      bulb.material.emissiveIntensity = active ? 2.2 : 0.14;
+      bulb.scale.setScalar(active ? 1.16 : 1);
+    });
+  });
+}
+
+function shouldStopAtRed(car, nextTravel, direction, time) {
+  const axis = car.userData.vertical ? "v" : "h";
+  const state = trafficState(axis, time);
+  if (state === "green") return false;
+  const stopPoints = car.userData.vertical ? [-28, 0, 28] : [-32, 0, 32];
+  const current = car.userData.vertical ? car.position.z : car.position.x;
+  const next = wrapLane(nextTravel, car.userData.vertical ? 40 : 50);
+  return stopPoints.some((point) => {
+    const stopLine = point - direction * 5.6;
+    const currentDistance = (stopLine - current) * direction;
+    const nextDistance = (stopLine - next) * direction;
+    const closeToIntersection = Math.abs((point - current) * direction) < 13;
+    return closeToIntersection && currentDistance >= -0.8 && nextDistance <= 0.8;
+  });
+}
+
+function shouldStopForTraffic(car, direction, limit) {
+  const span = limit * 2;
+  return cars.some((other) => {
+    if (other === car) return false;
+    if (other.userData.vertical !== car.userData.vertical) return false;
+    if (Math.sign(other.userData.speed) !== Math.sign(car.userData.speed)) return false;
+    const sameLane = car.userData.vertical
+      ? Math.abs(other.userData.laneX - car.userData.laneX) < 0.2
+      : Math.abs(other.userData.laneZ - car.userData.laneZ) < 0.2;
+    if (!sameLane) return false;
+    let distance = direction > 0
+      ? other.userData.travel - car.userData.travel
+      : car.userData.travel - other.userData.travel;
+    distance = ((distance % span) + span) % span;
+    return distance > 0.5 && distance < 7.8;
+  });
+}
+
+function applyPreset(name) {
+  const next = { ...defaultState(), prompt: `Preset: ${name}` };
+  if (name === "moon") Object.assign(next, { gravity: 0.16, atmosphere: 0.03, oxygen: 0, airResistance: 0.02, sunlight: 1.3 });
+  if (name === "mars") Object.assign(next, { gravity: 0.38, atmosphere: 0.25, oxygen: 1, airResistance: 0.2, temperatureF: -20, waterLevel: 0.35 });
+  if (name === "underwater") Object.assign(next, { waterLevel: 2.2, friction: 0.25, airResistance: 1.8, oxygen: 6, sunlight: 0.45 });
+  if (name === "iceage") Object.assign(next, { temperatureF: -10, friction: 0.18, sunlight: 0.55, waterLevel: 0.6 });
+  if (name === "nofriction") Object.assign(next, { friction: 0 });
+  if (name === "supergravity") Object.assign(next, { gravity: 3.2, friction: 1.2 });
+  if (name === "toxic") Object.assign(next, { oxygen: 7, atmosphere: 1.6, acidity: 1, sunlight: 0.65 });
+  setScenario(next);
+}
+
+function triggerDisaster(name) {
+  const disasterNames = {
+    meteor: "meteor strike",
+    tsunami: "tsunami",
+    solar: "solar flare",
+    storm: "extreme storm",
+    volcano: "volcanic eruption",
+    radiation: "radiation leak"
+  };
+  simState.disaster = disasterNames[name] || name.replace("-", " ");
+  if (name === "meteor") simState.earthquake = Math.max(simState.earthquake, 1);
+  if (name === "tsunami") simState.waterLevel = Math.max(simState.waterLevel, 2.1);
+  if (name === "solar") {
+    simState.sunlight = Math.max(simState.sunlight, 1.9);
+    simState.magnetism = Math.max(simState.magnetism, 2.6);
+  }
+  if (name === "storm") simState.wind = Math.max(simState.wind, 1.25);
+  if (name === "volcano") {
+    simState.temperatureF = Math.max(simState.temperatureF, 105);
+    simState.acidity = 1;
+    simState.sunlight = Math.min(simState.sunlight, 0.45);
+  }
+  if (name === "radiation") simState.magnetism = Math.max(simState.magnetism, 2.2);
+  createDisasterVisual(name);
+  updateReadout();
+}
+
+function createDisasterVisual(name) {
+  disasterObjects.forEach((object) => world.remove(object));
+  disasterObjects.length = 0;
+  if (name === "meteor") {
+    const meteor = new THREE.Mesh(new THREE.SphereGeometry(1.7, 24, 16), new THREE.MeshStandardMaterial({ color: 0x7c2d12, emissive: 0xf97316, emissiveIntensity: 1.2 }));
+    meteor.position.set(-28, 34, -20);
+    disasterObjects.push(meteor);
+    world.add(meteor);
+  }
+  if (name === "tsunami") {
+    const wave = box(92, 6, 2.2, new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.58 }), 0, 1.2, 43);
+    wave.name = "tsunamiWave";
+    disasterObjects.push(wave);
+    world.add(wave);
+  }
+  if (name === "solar") {
+    const flare = new THREE.Mesh(new THREE.RingGeometry(18, 21, 48), new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+    flare.position.set(0, 42, -30);
+    flare.rotation.x = Math.PI / 2;
+    disasterObjects.push(flare);
+    world.add(flare);
+  }
+  if (name === "storm" || name === "volcano" || name === "radiation") {
+    const haze = new THREE.Mesh(new THREE.SphereGeometry(42, 32, 18), new THREE.MeshBasicMaterial({ color: name === "radiation" ? 0x84cc16 : 0x64748b, transparent: true, opacity: 0.09, side: THREE.BackSide }));
+    haze.position.set(0, 16, 0);
+    disasterObjects.push(haze);
+    world.add(haze);
+  }
+}
+
+function updateDisasterObjects(time) {
+  disasterObjects.forEach((object) => {
+    if (object.name === "tsunamiWave") object.position.z = 43 - ((time * 4) % 72);
+    else {
+      object.rotation.y += 0.01;
+      object.position.y += Math.sin(time * 2) * 0.005;
+    }
+  });
 }
 
 function positionPersonOnPath(person, progress) {
@@ -971,8 +1313,10 @@ function resize() {
 }
 
 function animate(timeMs) {
-  const time = timeMs / 1000;
-  applySimulation(time);
+  const realDt = lastFrameMs ? Math.min(0.08, (timeMs - lastFrameMs) / 1000) : 0.016;
+  lastFrameMs = timeMs;
+  if (!paused) simClock += realDt * timeScale;
+  applySimulation(simClock);
   controls.update();
   renderer.render(scene, camera);
   updateScienceLabels();
@@ -1001,11 +1345,91 @@ slider.addEventListener("input", () => {
   updateReadout();
 });
 
+universalControls?.addEventListener("input", (event) => {
+  const input = event.target.closest("input[data-rule]");
+  if (!input) return;
+  const rule = input.dataset.rule;
+  simState[rule] = Number(input.value);
+  simState.prompt = `Manual lab controls: ${rule} changed`;
+  updateReadout();
+});
+
+presetGrid?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-preset]");
+  if (!button) return;
+  applyPreset(button.dataset.preset);
+  presetGrid.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
+});
+
+eventGrid?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-event]");
+  if (!button) return;
+  triggerDisaster(button.dataset.event);
+  eventGrid.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
+});
+
+missionList?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-mission]");
+  if (!button) return;
+  activeMission = button.textContent.trim();
+  simState.mission = button.dataset.mission;
+  missionList.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === button));
+  if (button.dataset.mission === "gravity-city") {
+    simState.gravity = Math.max(simState.gravity, 2);
+  }
+  if (button.dataset.mission === "heat-grid") {
+    simState.temperatureF = Math.max(simState.temperatureF, 112);
+    simState.sunlight = Math.max(simState.sunlight, 1.4);
+  }
+  if (button.dataset.mission === "mars-transport") {
+    simState.gravity = 0.38;
+    simState.atmosphere = 0.25;
+    simState.oxygen = Math.min(simState.oxygen, 2);
+  }
+  updateReadout();
+});
+
+timeControls?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-time]");
+  if (!button) return;
+  const value = button.dataset.time;
+  if (value === "pause") {
+    paused = !paused;
+  } else {
+    paused = false;
+    timeScale = Number(value);
+  }
+  timeControls.querySelectorAll("button").forEach((item) => {
+    item.classList.toggle("active", item === button && (value !== "pause" || paused));
+    if (item.dataset.time === "pause" && item !== button) item.textContent = "Pause";
+  });
+  button.textContent = value === "pause" ? (paused ? "Resume" : "Pause") : button.textContent;
+});
+
+scaleSwitcher?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-scale]");
+  if (!button) return;
+  setCameraScale(button.dataset.scale);
+});
+
 resetButton.addEventListener("click", () => {
   promptInput.value = "What if gravity became 2x stronger?";
   setScenario(defaultState());
+  previousSimTime = 0;
+  simClock = 0;
+  lastFrameMs = 0;
+  timeScale = 1;
+  paused = false;
+  activeMission = "";
   createWorld();
   setFullCityView();
+  const pauseButton = timeControls?.querySelector('button[data-time="pause"]');
+  if (pauseButton) pauseButton.textContent = "Pause";
+  timeControls?.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+  presetGrid?.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+  eventGrid?.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+  missionList?.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+  updateReadout();
 });
 
 window.addEventListener("resize", resize);

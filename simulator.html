@@ -68,6 +68,59 @@
             <button data-prompt="What if gravity was low, the air was thin, and friction was tiny?">alien planet combo</button>
           </div>
 
+          <details class="control-drawer" open>
+            <summary>Universal rule controls</summary>
+            <div class="universal-controls" id="universalControls">
+              <label><span>Gravity</span><input type="range" min="0.1" max="5" step="0.1" value="2" data-rule="gravity"><output>2.0x</output></label>
+              <label><span>Friction</span><input type="range" min="0" max="1.5" step="0.05" value="1" data-rule="friction"><output>1.00</output></label>
+              <label><span>Air resistance</span><input type="range" min="0" max="2" step="0.05" value="1" data-rule="airResistance"><output>1.00</output></label>
+              <label><span>Temperature</span><input type="range" min="-40" max="140" step="1" value="72" data-rule="temperatureF"><output>72°F</output></label>
+              <label><span>Atmosphere</span><input type="range" min="0" max="2" step="0.05" value="1" data-rule="atmosphere"><output>100%</output></label>
+              <label><span>Sunlight</span><input type="range" min="0" max="2" step="0.05" value="1" data-rule="sunlight"><output>100%</output></label>
+              <label><span>Oxygen</span><input type="range" min="0" max="35" step="1" value="21" data-rule="oxygen"><output>21%</output></label>
+              <label><span>Water level</span><input type="range" min="0" max="2.4" step="0.05" value="1" data-rule="waterLevel"><output>100%</output></label>
+              <label><span>Wind</span><input type="range" min="0" max="1.5" step="0.05" value="0" data-rule="wind"><output>0%</output></label>
+              <label><span>Magnetism</span><input type="range" min="0" max="3" step="0.1" value="1" data-rule="magnetism"><output>1.0x</output></label>
+            </div>
+          </details>
+
+          <details class="control-drawer">
+            <summary>Presets and disaster events</summary>
+            <div class="preset-grid" id="presetGrid">
+              <button data-preset="moon">Moon Gravity</button>
+              <button data-preset="mars">Mars Mode</button>
+              <button data-preset="underwater">Underwater Earth</button>
+              <button data-preset="iceage">Ice Age</button>
+              <button data-preset="nofriction">No Friction</button>
+              <button data-preset="supergravity">Super Gravity</button>
+              <button data-preset="toxic">Toxic Atmosphere</button>
+            </div>
+            <div class="event-grid" id="eventGrid">
+              <button data-event="meteor">Meteor Strike</button>
+              <button data-event="tsunami">Tsunami</button>
+              <button data-event="solar">Solar Flare</button>
+              <button data-event="storm">Extreme Storm</button>
+              <button data-event="volcano">Volcanic Eruption</button>
+              <button data-event="radiation">Radiation Leak</button>
+            </div>
+          </details>
+
+          <details class="control-drawer">
+            <summary>Missions and time</summary>
+            <div class="mission-list" id="missionList">
+              <button data-mission="gravity-city">Keep the city alive with double gravity</button>
+              <button data-mission="heat-grid">Prevent blackouts during a heat wave</button>
+              <button data-mission="mars-transport">Design transportation for Mars gravity</button>
+            </div>
+            <div class="time-controls" id="timeControls">
+              <button data-time="pause">Pause</button>
+              <button data-time="0.25">Slow</button>
+              <button data-time="1">Normal</button>
+              <button data-time="4">Fast</button>
+              <button data-time="12">Time Lapse</button>
+            </div>
+          </details>
+
           <h2 class="control-subhead">Quick variables</h2>
           <div class="law-list rich" id="simLawList">
             <button class="active" data-law="gravity">
@@ -107,6 +160,15 @@
             <article><strong id="metricTwo">Car braking</strong><span id="metricTwoValue">Harder</span></article>
             <article><strong id="metricThree">Building stress</strong><span id="metricThreeValue">High</span></article>
           </div>
+
+          <div class="dashboard-grid" id="dashboardGrid">
+            <article><strong>Health</strong><span id="dashHealth">Stable</span></article>
+            <article><strong>Energy</strong><span id="dashEnergy">Normal</span></article>
+            <article><strong>Traffic</strong><span id="dashTraffic">Flowing</span></article>
+            <article><strong>Structures</strong><span id="dashStructure">Stable</span></article>
+            <article><strong>Pollution</strong><span id="dashPollution">Low</span></article>
+            <article><strong>Water</strong><span id="dashWater">Normal</span></article>
+          </div>
         </aside>
 
         <div class="sim-stage">
@@ -115,6 +177,17 @@
           <div class="sim-hud">
             <span id="worldBadge">Gravity x2.0</span>
             <strong id="worldTitle">Heavier Earth</strong>
+          </div>
+          <div class="scale-switcher" id="scaleSwitcher">
+            <button class="active" data-scale="city">City</button>
+            <button data-scale="building">Building</button>
+            <button data-scale="room">Room</button>
+            <button data-scale="human">Human</button>
+            <button data-scale="molecular">Molecular</button>
+          </div>
+          <div class="narrator-card" id="narratorCard">
+            <span>AI Scientist</span>
+            <p id="narratorText">Try changing a rule. I’ll explain the chain reaction as the city responds.</p>
           </div>
           <div class="sim-explain">
             <h2 id="explainTitle">If gravity became 2x stronger...</h2>
