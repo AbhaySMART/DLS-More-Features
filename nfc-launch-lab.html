@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Daily Life Science NFC mission: Air Pressure Launch Lab."
+    />
+    <title>DLS | Air Pressure Launch Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="nfc-body">
+    <nav class="site-nav nfc-nav" aria-label="Primary navigation">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">⚡</span>
+        <span>Daily<span>Life</span>Science</span>
+      </a>
+      <div class="nav-links">
+        <a href="scanner.html">AI Reality Scanner</a>
+        <a href="simulator.html">What If?</a>
+        <a href="nfc-launch-lab.html">NFC Lab</a>
+        <a href="index.html">Future Labs</a>
+      </div>
+      <button class="nav-cta" id="replayTop" type="button">Replay Mission</button>
+    </nav>
+
+    <main class="nfc-page">
+      <section class="nfc-unlock" aria-label="Air Pressure Launch Lab mission">
+        <div class="nfc-orbit" id="particleField" aria-hidden="true"></div>
+
+        <div class="nfc-copy">
+          <span class="mission-pill">NFC Mission Unlocked</span>
+          <h1>🚀 Air Pressure Launch Lab</h1>
+          <p>Why does the disc fly so far?</p>
+          <div class="mission-meter" aria-label="Mission animation progress">
+            <span></span>
+          </div>
+        </div>
+
+        <div class="launch-lab" id="launchLab" aria-label="Animated air pressure launch diagram">
+          <div class="lab-grid" aria-hidden="true"></div>
+          <div class="pressure-tube">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div class="launcher-base">
+            <div class="angle-arc"><strong>45°</strong></div>
+            <div class="toy-handle"></div>
+            <div class="toy-neck"></div>
+            <div class="toy-cup">
+              <div class="loaded-disc">
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="air-plume">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="flying-disc">
+            <span class="disc-rim"></span>
+            <span class="disc-swirl"></span>
+          </div>
+          <svg class="launch-overlay" viewBox="0 0 900 520" aria-hidden="true">
+            <path class="trajectory-main" d="M 125 397 C 260 230, 502 92, 792 176" />
+            <path class="trajectory-ghost low" d="M 125 397 C 294 314, 496 287, 760 324" />
+            <path class="trajectory-ghost high" d="M 125 397 C 210 104, 380 36, 574 214" />
+            <g class="force-arrow thrust">
+              <path d="M 142 378 L 224 342" />
+              <path d="M 224 342 L 206 340 M 224 342 L 213 356" />
+            </g>
+            <g class="force-arrow air">
+              <path d="M 288 202 L 288 294" />
+              <path d="M 288 294 L 276 276 M 288 294 L 300 276" />
+            </g>
+            <g class="force-arrow gravity">
+              <path d="M 544 118 L 544 238" />
+              <path d="M 544 238 L 530 218 M 544 238 L 558 218" />
+            </g>
+          </svg>
+          <div class="concept-chip chip-one">Stored energy</div>
+          <div class="concept-chip chip-two">Air pushes down</div>
+          <div class="concept-chip chip-three">Gravity pulls</div>
+          <div class="concept-chip chip-four">Best range</div>
+          <div class="slow-replay">Slow motion replay</div>
+        </div>
+      </section>
+
+      <section class="nfc-science-band" aria-label="The science behind the air pressure launch">
+        <article class="nfc-science-card">
+          <span class="mission-pill light">The Science Behind It</span>
+          <h2>🧠 What Happened?</h2>
+          <div class="science-mini-grid">
+            <div>
+              <span class="science-icon pressure"></span>
+              <strong>Air pressure created force</strong>
+            </div>
+            <div>
+              <span class="science-icon spring"></span>
+              <strong>The launcher stored energy</strong>
+            </div>
+            <div>
+              <span class="science-icon angle"></span>
+              <strong>The angle changed the path</strong>
+            </div>
+            <div>
+              <span class="science-icon speed"></span>
+              <strong>More force = more speed</strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="angle-lab" aria-label="Angle challenge">
+        <div class="angle-copy">
+          <span class="mission-pill">Quick Challenge</span>
+          <h2>Which angle goes farther?</h2>
+          <p>Choose an angle and launch the disc.</p>
+          <div class="angle-buttons" id="angleButtons">
+            <button type="button" data-angle="30">30°</button>
+            <button type="button" data-angle="45">45°</button>
+            <button type="button" data-angle="90">90°</button>
+          </div>
+          <strong class="angle-feedback" id="angleFeedback">Tap an angle to test the flight.</strong>
+        </div>
+
+        <div class="angle-sim" id="angleSim">
+          <div class="angle-ground"></div>
+          <div class="angle-launcher"></div>
+          <div class="angle-disc"></div>
+          <svg viewBox="0 0 620 290" aria-hidden="true">
+            <path class="path p30" d="M 54 232 C 170 160, 314 144, 532 206" />
+            <path class="path p45" d="M 54 232 C 188 54, 386 38, 580 150" />
+            <path class="path p90" d="M 54 232 C 64 42, 112 42, 128 232" />
+          </svg>
+          <div class="range-marker marker30">30°</div>
+          <div class="range-marker marker45">45°</div>
+          <div class="range-marker marker90">90°</div>
+        </div>
+      </section>
+
+      <section class="reward-screen" id="rewardScreen" aria-label="Mission reward">
+        <div class="reward-badge">
+          <span>✓</span>
+        </div>
+        <div>
+          <span class="mission-pill light">Mission Complete</span>
+          <h2>✅ Scientist Discovered!</h2>
+          <p>Next mission teaser: Can air pressure lift a mini rocket higher than gravity pulls it down?</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="nfc-launch-lab.js"></script>
+  </body>
+</html>
