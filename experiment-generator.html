@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Daily Life Science public AI Experiment Generator."
+    />
+    <title>DLS | AI Experiment Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="tool-page experiment-body">
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">⚡</span>
+        <span>Daily<span>Life</span>Science</span>
+      </a>
+      <div class="nav-links">
+        <a href="experiment-generator.html">Experiment Generator</a>
+        <a href="simulator.html">What If?</a>
+        <a href="nfc-launch-lab.html">NFC Lab</a>
+        <a href="index.html">Future Labs</a>
+      </div>
+      <a class="nav-cta" href="#generator">Create Experiment</a>
+    </nav>
+
+    <main class="experiment-page">
+      <section class="experiment-hero" id="generator">
+        <div class="experiment-hero-copy">
+          <span class="eyebrow">Public DLS Tool</span>
+          <h1>AI Experiment Generator</h1>
+          <p>Create a science experiment from your interests using everyday materials.</p>
+        </div>
+
+        <form class="generator-panel" id="experimentForm">
+          <label for="experimentPrompt">Type an interest, topic, object, or question</label>
+          <textarea
+            id="experimentPrompt"
+            rows="5"
+            placeholder="Example: Why do sneakers grip the floor?"
+          ></textarea>
+
+          <div class="example-prompts" aria-label="Example prompts">
+            <button type="button" data-prompt="Why do sneakers grip the floor?">sneaker grip</button>
+            <button type="button" data-prompt="How do clouds form?">clouds</button>
+            <button type="button" data-prompt="Does a ball bounce higher on different surfaces?">bouncing ball</button>
+            <button type="button" data-prompt="Why do plants bend toward light?">plants and light</button>
+          </div>
+
+          <button class="primary-button" type="submit">Generate My Experiment</button>
+          <p class="public-note">
+            Public version: copy, print, regenerate, or download. Saving history requires a free DLS account.
+          </p>
+        </form>
+      </section>
+
+      <section class="generator-loading" id="generatorLoading" aria-live="polite">
+        <div class="loading-orbit" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <strong>Building your DLS experiment module...</strong>
+      </section>
+
+      <section class="generated-shell" id="generatedShell" aria-live="polite">
+        <div class="module-actions" aria-label="Experiment actions">
+          <button type="button" id="copyModule">Copy</button>
+          <button type="button" id="printModule">Print</button>
+          <button type="button" id="regenerateModule">Regenerate</button>
+          <button type="button" id="downloadPdf">Download PDF</button>
+        </div>
+
+        <article class="dls-module" id="moduleResult">
+          <header class="module-cover">
+            <span class="module-kicker">Daily Life Science</span>
+            <h2 id="moduleTitle">Surface Grip Lab</h2>
+            <div class="module-visual" id="moduleVisual" aria-label="Generated experiment visual">
+              <img id="modulePhoto" alt="Relevant experiment photo" />
+              <small id="modulePhotoCaption">Online image selected for this experiment.</small>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div>
+              <p id="moduleSubtitle">A safe household experiment about friction, force, and motion.</p>
+              <p id="realLifeConnection"></p>
+            </div>
+          </header>
+
+          <div class="dls-section-stack">
+            <section class="dls-story-section">
+              <h3>Question</h3>
+              <p id="experimentQuestion"></p>
+            </section>
+
+            <section class="dls-story-section">
+              <h3>Science Concept</h3>
+              <p id="scienceConcept"></p>
+            </section>
+
+            <section class="dls-story-section experiment-details">
+              <h3>Experiment</h3>
+              <div class="module-grid">
+                <section class="module-card">
+                  <span class="card-number">01</span>
+                  <h4>Materials</h4>
+                  <ul id="materialsList"></ul>
+                </section>
+                <section class="module-card">
+                  <span class="card-number">02</span>
+                  <h4>Hypothesis</h4>
+                  <p id="hypothesisText"></p>
+                </section>
+                <section class="module-card wide-card">
+                  <span class="card-number">03</span>
+                  <h4>Step-by-Step Procedure</h4>
+                  <ol id="procedureList"></ol>
+                </section>
+                <section class="module-card wide-card">
+                  <span class="card-number">04</span>
+                  <h4>Data Table</h4>
+                  <div class="table-wrap">
+                    <table>
+                      <thead id="dataHead"></thead>
+                      <tbody id="dataBody"></tbody>
+                    </table>
+                  </div>
+                  <div class="data-tools">
+                    <button type="button" id="analyzeData">Analyze My Results</button>
+                    <button type="button" id="clearData">Clear Data</button>
+                  </div>
+                  <div class="data-feedback" id="dataFeedback" aria-live="polite">
+                    Enter your trial results, then analyze the trend.
+                  </div>
+                </section>
+              </div>
+            </section>
+
+            <section class="dls-story-section">
+              <h3>Explanation</h3>
+              <div class="explanation-pair">
+                <div>
+                  <h4>What Happened?</h4>
+                  <p id="whatHappened"></p>
+                </div>
+                <div>
+                  <h4>Why It Happened</h4>
+                  <p id="whyHappened"></p>
+                </div>
+              </div>
+            </section>
+
+            <section class="dls-story-section trivia-section">
+              <h3>Trivia</h3>
+              <div class="module-grid">
+                <section class="module-card">
+                  <span class="card-number">05</span>
+                  <h4>Reflection Questions</h4>
+                  <ul id="reflectionList"></ul>
+                </section>
+                <section class="module-card quiz-card">
+                  <span class="card-number">06</span>
+                  <h4>Quick Quiz</h4>
+                  <ol id="quizList"></ol>
+                </section>
+                <section class="module-card safety-card">
+                  <span class="card-number">07</span>
+                  <h4>Safety Notes</h4>
+                  <ul id="safetyList"></ul>
+                </section>
+                <section class="module-card extension-card">
+                  <span class="card-number">08</span>
+                  <h4>Extension Challenge</h4>
+                  <p id="extensionChallenge"></p>
+                </section>
+              </div>
+            </section>
+          </div>
+
+          <footer class="module-cta">
+            <strong>Want to save your experiments? Create a free DLS account.</strong>
+            <a href="https://dailylifescience.org/">Create a free account</a>
+          </footer>
+        </article>
+      </section>
+    </main>
+
+    <script src="experiment-generator.js"></script>
+  </body>
+</html>
